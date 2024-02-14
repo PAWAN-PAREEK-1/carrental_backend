@@ -87,6 +87,38 @@ export const register = asyncHandler(async (req, res, next) => {
   }
 });
 
+export const updateUser = asyncHandler(async(req,res)=>{
+  try {
+    const {firstName,lastName,profileImage}= req.body
+    const userId = req.params.id
+    // console.log(userId)
+    if(!userId){
+      res.status(404).json({message:"please provide userid"})
+    }
+    // if(!firstName|| !lastName || !profileImage){
+    //   res.status(404).json({message:"all fileds are require"})
+    // }
+
+    const dataUpdate ={}
+    if (firstName) dataUpdate.firstName =firstName;
+    if (lastName) dataUpdate.lastName =lastName;
+    if (profileImage) dataUpdate.profileImage =profileImage;
+    
+    if (Object.keys(dataUpdate).length === 0) {
+      return res.status(400).json({ message: "No fields provided for updating" });
+    }
+    const updatedUser = await prisma.user.update({
+        where:{id:userId },
+        data:dataUpdate
+    })
+    
+    return res.status(200).json({ message: "User updated successfully", data: updatedUser });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: "Internal server error" });
+  }
+})
+
 
 
 
