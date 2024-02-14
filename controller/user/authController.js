@@ -69,15 +69,26 @@ export const register = asyncHandler(async (req, res, next) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = await prisma.user.create({
-          data: {
-              firstName: firstName,
-              lastName: lastName,
-              password: hashedPassword,
-              mobileNumber: parseInt(mobileNumber), // Convert mobileNumber to integer
-              email: email,
-              profileImage: profileImage,
-              type: type, // Include the type field
-          },
+        data: {
+          firstName: firstName,
+          lastName: lastName,
+          password: hashedPassword,
+          mobileNumber: parseInt(mobileNumber), // Convert mobileNumber to integer
+          email: email,
+          profileImage: profileImage,
+          type: type, // Include the type field
+      },
+      select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          mobileNumber: true,
+          email: true,
+          profileImage: true,
+          type: true,
+          createdAt: true,
+          updatedAt: true,
+      }
       });
 
       return res.status(200).json({ message: "User created successfully", data: newUser });
@@ -108,8 +119,20 @@ export const updateUser = asyncHandler(async(req,res)=>{
       return res.status(400).json({ message: "No fields provided for updating" });
     }
     const updatedUser = await prisma.user.update({
-        where:{id:userId },
-        data:dataUpdate
+      where: { id: userId },
+      data: dataUpdate,
+      select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          mobileNumber: true,
+          email: true,
+          profileImage: true,
+          type: true,
+          createdAt: true,
+          updatedAt: true,
+     
+      }
     })
     
     return res.status(200).json({ message: "User updated successfully", data: updatedUser });
