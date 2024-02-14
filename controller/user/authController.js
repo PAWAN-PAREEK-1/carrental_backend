@@ -91,152 +91,123 @@ export const register = asyncHandler(async (req, res, next) => {
 
 
 
-// Function to generate OTP
-// const generateOTP = () => {
-//   const otp = OTP.generate(4, { digits: true, alphabets: false, upperCase: false, specialChars: false });
-//   return otp;
-// };
-
-// // Function to send OTP via email
-// const sendOTPEmail = async (email, otp) => {
-//   const transporter = nodemailer.createTransport({
-//       service: 'gmail',
-//       auth: {
-//           user: 'knikniknikni506@gmail.com', // Your Gmail email address
-//           pass: 'Pawan@6150', // Your Gmail password
-//       },
-//   });
-
-//   const mailOptions = {
-//       from: 'knikniknikni506@gmail.com',
-//       to: email,
-//       subject: 'OTP Verification',
-//       text: `Your OTP for registration is ${otp}. It will expire in 10 minutes.`,
-//   };
-
-//   await transporter.sendMail(mailOptions);
-// };
-
-// export const generateOTPHandler = asyncHandler(async (req, res) => {
-//   try {
-//       const { email } = req.body;
-
-//       // Check if the email is provided
-//       if (!email) {
-//           return res.status(400).json({ message: "Email is required" });
-//       }
-
-//       // Generate OTP
-//       const otp = generateOTP();
-
-//       // Hash the OTP before saving
-//       const hashedOTP = await bcrypt.hash(otp, 10);
-
-//       // Save OTP to the database with a timestamp
-//       const otpRecord = await prisma.otp.create({
-//           data: {
-//               email,
-//               hashedOTP,
-//               createdAt: new Date(),
-//           },
-//       });
-
-//       // Send OTP to the user's email
-//       await sendOTPEmail(email, otp);
-
-//       return res.status(200).json({ message: "OTP sent successfully" });
-//   } catch (error) {
-//       console.log(error);
-//       return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
-
-// export const verifyOTPHandler = asyncHandler(async (req, res) => {
-//   try {
-//       const { email, otp } = req.body;
-
-//       // Check if the email and OTP are provided
-//       if (!email || !otp) {
-//           return res.status(400).json({ message: "Email and OTP are required" });
-//       }
-
-//       // Retrieve the OTP record from the database
-//       const otpRecord = await prisma.otp.findFirst({
-//           where: {
-//               email,
-//           },
-//           orderBy: {
-//               createdAt: 'desc',
-//           },
-//       });
-
-//       // If no record found or OTP expired (assuming OTP validity is 10 minutes)
-//       if (!otpRecord || Date.now() - otpRecord.createdAt.getTime() > 10 * 60 * 1000) {
-//           return res.status(400).json({ message: "OTP expired or invalid" });
-//       }
-
-//       // Verify OTP
-//       const isValidOTP = await bcrypt.compare(otp, otpRecord.hashedOTP);
-
-//       if (!isValidOTP) {
-//           return res.status(400).json({ message: "Invalid OTP" });
-//       }
-
-//       // Proceed with registration
-//       // You can redirect to the registration endpoint or return a success response
-//       return res.status(200).json({ message: "OTP verified successfully" });
-//   } catch (error) {
-//       console.log(error);
-//       return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
 
 
-const generateOTP = () => {
-  const otp = OTP.generate(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
+
+
+const generateNumericOTP = (length) => {
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+      otp += Math.floor(Math.random() * 10); // Generate a random digit (0-9) and append it to the OTP
+  }
   return otp;
 };
 
+const generateOTP = async (email) => {
+  let otpEntry = await prisma.otpTable.findFirst({
+      where: {
+          email
+      }
+  });
+
+  let otp, hashedOTP;
+
+  if (otpEntry) {
+   
+      otp = generateNumericOTP(4); // Generate a new OTP
+      hashedOTP = await bcrypt.hash(otp, 10);
+      // Update the existing OTP entry with the new OTP
+      otpEntry = await prisma.otpTable.update({
+          where: {
+              id: otpEntry.id
+          },
+          data: {
+              otp: hashedOTP
+          }
+      });
+  } else {
+    
+      otp = generateNumericOTP(4); // Generate a new OTP
+      hashedOTP = await bcrypt.hash(otp, 10);
+      otpEntry = await prisma.otpTable.create({
+          data: {
+              email,
+              otp: hashedOTP
+          }
+      });
+  }
+
+  return { otp, hashedOTP };
+};
+
+
+
 const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    auth: {
-        user: 'knikniknikni506@gmail.com',
-        pass: 'omjq bvsh zdno krjd'
-    }
-});
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+            user: 'knikniknikni506@gmail.com',
+            pass: 'omjq bvsh zdno krjd'
+        }
+    });
 
-  const mailOptions = {
-      from: 'knikniknikni506@gmail.com',
-      to: email,
-      subject: 'OTP Verification',
-      text: `Your OTP for registration is ${otp}. It will expire in 10 minutes.`,
-  };
+    const mailOptions = {
+        from: 'knikniknikni506@gmail.com',
+        to: email,
+        subject: 'OTP Verification',
+        text: `Your OTP for registration is ${otp}. It will expire in 10 minutes.`,
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
 };
 
 export const testOTPHandler = asyncHandler(async (req, res) => {
-  try {
-      const { email } = req.body;
+    try {
+        const { email } = req.body;
 
-      // Check if the email is provided
-      if (!email) {
-          return res.status(400).json({ message: "Email is required" });
-      }
+        
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
 
-      // Generate OTP
-      const otp = generateOTP();
+   
+        const { otp, hashedOTP } = await generateOTP();
 
-      // Send OTP to the provided email
-      await sendOTPEmail(email, otp);
+       
+        await sendOTPEmail(email, otp);
+        const otpEntry = await prisma.otpTable.create({
+          data: {
+              email,
+              otp: hashedOTP
+          }
+      });
+      setTimeout(async () => {
+        console.log('Attempting to delete OTP entry...'); 
+        try {
+            await prisma.otpTable.delete({
+                where: {
+                    id: otpEntry.id
+                }
+            });
+            console.log('OTP entry deleted successfully'); 
+        } catch (error) {
+            console.error('Error deleting OTP entry:', error); 
+        }
+    }, 600000);
 
-      return res.status(200).json({ message: "OTP sent successfully" });
-  } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Internal server error" });
-  }
+        return res.status(200).json({ message: "OTP sent successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
 });
+
+
+
+
+
+
+
 
 

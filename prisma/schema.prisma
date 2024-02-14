@@ -28,3 +28,10 @@ enum UserType {
   SELLER
   BUYER
 }
+
+model otpTable {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  createdAt DateTime @default(now())
+}
