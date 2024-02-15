@@ -2,7 +2,7 @@ import express from "express";
 import prisma from "../../db/db-config.js";
 import OTP from 'otp-generator';
 import nodemailer from 'nodemailer';
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import dotenv from 'dotenv';
@@ -13,7 +13,7 @@ import dotenv from 'dotenv';
 export const login = asyncHandler(async (req, res, next) => {
     try {
         const { mobileNumber, password } = req.body
-        console.log(req.body)
+        // console.log(req.body)
         if (!mobileNumber) {
             res.status(404).json({ message: "please provide mobile and password " })
         }
@@ -70,7 +70,8 @@ export const register = asyncHandler(async (req, res, next) => {
             return res.status(400).json({ message: "Password is required" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    
+        const hashedPassword = bcrypt.hashSync(password, 10);
 
         const newUser = await prisma.user.create({
             data: {
@@ -83,7 +84,7 @@ export const register = asyncHandler(async (req, res, next) => {
                 type: type, // Include the type field
             },
             select: {
-                id: true,
+                id: true, 
                 firstName: true,
                 lastName: true,
                 mobileNumber: true,
@@ -179,7 +180,7 @@ export const getUser = asyncHandler(async (req, res) => {
 export const resetPassword = asyncHandler(async (req, res) => {
     try {
         const { newPassword, oldPassword, confirmPassword } = req.body;
-        const userId = req.user.id;
+        const userId = req.params.id;
 
         // Check if all required fields are provided
         if (!newPassword || !oldPassword || !confirmPassword) {
@@ -187,20 +188,14 @@ export const resetPassword = asyncHandler(async (req, res) => {
         }
 
         // Find the user by userId
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: { id: userId }
         });
-
-
 
         // Check if user exists
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
-        const hash = await bcrypt.hash(oldPassword, 10);
-        console.log(hash)
-        console.log(user.password)
 
         // Verify if old password matches the password stored in the database
         const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
@@ -228,6 +223,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 });
+
 
 
 

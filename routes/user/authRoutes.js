@@ -10,10 +10,10 @@ const router = express.Router();
 router.route('/login').post(login)
 router.route('/register').post(verifyOTPHandler,register)
 router.route('/otp').post(testOTPHandler)
-router.route('/reset-password').put(authUser,resetPassword)
+router.route('/reset-password/:id').put(resetPassword)
 router.route('/').get(authUser, getUser).put(authUser, updateUser)
 
-// router.route('/:id').delete(authUser,deleteUser)
+router.route('/:id').delete(authUser,deleteUser)
 
 
  
