@@ -1,7 +1,7 @@
 import express from "express";
 import prisma from "../../db/db-config.js";
-import OTP from 'otp-generator';
-import nodemailer from 'nodemailer';
+// import OTP from 'otp-generator';
+// import nodemailer from 'nodemailer';
 import bcrypt from 'bcryptjs';
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
@@ -45,7 +45,7 @@ export const login = asyncHandler(async (req, res, next) => {
     }
 });
 
-export const register = asyncHandler(async (req, res, next) => {
+export const    register = asyncHandler(async (req, res, next) => {
     try {
         const { firstName, profileImage, password, mobileNumber, lastName, email, type } = req.body;
         console.log(req.body);
@@ -70,7 +70,7 @@ export const register = asyncHandler(async (req, res, next) => {
             return res.status(400).json({ message: "Password is required" });
         }
 
-    
+
         const hashedPassword = bcrypt.hashSync(password, 10);
 
         const newUser = await prisma.user.create({
@@ -84,7 +84,7 @@ export const register = asyncHandler(async (req, res, next) => {
                 type: type, // Include the type field
             },
             select: {
-                id: true, 
+                id: true,
                 firstName: true,
                 lastName: true,
                 mobileNumber: true,
@@ -180,7 +180,7 @@ export const getUser = asyncHandler(async (req, res) => {
 export const resetPassword = asyncHandler(async (req, res) => {
     try {
         const { newPassword, oldPassword, confirmPassword } = req.body;
-        const userId = req.params.id;
+        const userId = req.user.id;
 
         // Check if all required fields are provided
         if (!newPassword || !oldPassword || !confirmPassword) {
@@ -223,6 +223,40 @@ export const resetPassword = asyncHandler(async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 });
+
+export const forgotPassword = asyncHandler(async(req,res)=>{
+    try {
+
+        const {email,newPassword,confirmPassword} = req.body;
+        if(!email || !newPassword || !confirmPassword){
+        return res.status(404).json({ message: "please enter all fields" });
+    }
+    const CheckUser = await prisma.user.findFirst({
+        where:{email}
+    })
+
+    if (!CheckUser) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: "New password and confirm password do not match" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword,10)
+    const updatePassword = await prisma.user.update({
+        where: { email },
+        data: {
+            password: hashedPassword
+        }
+    })
+
+    return res.status(200).json({ message: 'Password updated successfully' });
+
+    } catch (error) {
+console.log(error)
+    }
+})
 
 
 

@@ -32,7 +32,7 @@ const generateOTP = async (email) => {
   let otp, hashedOTP;
 
   if (otpEntry) {
-   
+
       otp = generateNumericOTP(4); // Generate a new OTP
       hashedOTP = await bcrypt.hash(otp, 10);
       // Update the existing OTP entry with the new OTP
@@ -45,7 +45,7 @@ const generateOTP = async (email) => {
           }
       });
   } else {
-    
+
       otp = generateNumericOTP(4); // Generate a new OTP
       hashedOTP = await bcrypt.hash(otp, 10);
       otpEntry = await prisma.otpTable.create({
@@ -85,15 +85,15 @@ export const testOTPHandler = asyncHandler(async (req, res) => {
     try {
         const { email } = req.body;
 
-        
+
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
 
-   
-        const { otp, hashedOTP } = await generateOTP();
 
-       
+        const { otp, hashedOTP } = await generateOTP(email);
+
+
         await sendOTPEmail(email, otp);
         const otpEntry = await prisma.otpTable.create({
           data: {
@@ -102,16 +102,16 @@ export const testOTPHandler = asyncHandler(async (req, res) => {
           }
       });
       setTimeout(async () => {
-        console.log('Attempting to delete OTP entry...'); 
+        console.log('Attempting to delete OTP entry...');
         try {
             await prisma.otpTable.delete({
                 where: {
                     id: otpEntry.id
                 }
             });
-            console.log('OTP entry deleted successfully'); 
+            console.log('OTP entry deleted successfully');
         } catch (error) {
-            console.error('Error deleting OTP entry:', error); 
+            console.error('Error deleting OTP entry:', error);
         }
     }, 600000);
 
