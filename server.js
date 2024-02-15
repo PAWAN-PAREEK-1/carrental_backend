@@ -1,6 +1,7 @@
 import express from 'express';
 import { routes } from './routes/index.js';
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -9,10 +10,13 @@ dotenv.config();
 
 
 const app = express();
+
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 // app.use("/api/admin" , require("./routes/adminRoute"))
 app.use("/api", routes)
 
