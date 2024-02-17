@@ -115,7 +115,7 @@ export const testOTPHandler = asyncHandler(async (req, res) => {
         }
     }, 600000);
 
-        return res.status(200).json({ message: "OTP sent successfully" });
+        return res.status(200).json({success:true, message: "OTP sent successfully" });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error" });

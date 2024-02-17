@@ -30,7 +30,7 @@ export const    register = asyncHandler(async (req, res, next) => {
             },
         });
         if (findUser) {
-            return res.status(400).json({ message: "Email or mobile number already in use" });
+            return res.status(400).json({success:true, message: "Email or mobile number already in use" });
         }
 
         if (!password || password.length === 0) {
@@ -107,7 +107,7 @@ export const updateUser = asyncHandler(async (req, res) => {
             }
         })
 
-        return res.status(200).json({ message: "User updated successfully", data: updatedUser });
+        return res.status(200).json({success:true, message: "User updated successfully", data: updatedUser });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ message: "Internal server error" });
@@ -126,7 +126,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
         })
 
-        return res.status(200).json({ message: "User deleted successfully", data: deleteData });
+        return res.status(200).json({success:true, message: "User deleted successfully", data: deleteData });
 
     } catch (error) {
         console.log(error)
@@ -135,14 +135,27 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
 export const getUser = asyncHandler(async (req, res) => {
     try {
-        const user = req.user
+        const userId = req.user.id;
+
+        // Fetch user details including associated cars
+        const userWithCars = await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                cars: true
+            }
+        });
+
         res.json({
-            user
-        })
+            user: userWithCars,
+            success:true
+        });
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
-})
+});
 
 
 

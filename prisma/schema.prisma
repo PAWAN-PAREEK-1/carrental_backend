@@ -75,3 +75,18 @@ enum FuelType {
   METHANOL
   ELECTRIC
 }
+
+model carCompany {
+  id      String     @id @default(uuid())
+  company String
+  model   carModel[]
+}
+
+model carModel {
+  id           String     @id @default(uuid())
+  model        String
+  carCompanyId String // Define a foreign key to reference carCompany
+  carCompany   carCompany @relation(fields: [carCompanyId], references: [id], onDelete: Cascade)
+}
+
+
