@@ -101,6 +101,21 @@ export const addCar = asyncHandler(async(req,res)=>{
     }
 })
 
+export const getAllCar = asyncHandler(async(req,res)=>{
+    try {
+        // Retrieve all cars from the database
+        const allCars = await prisma.carCompany.findMany({
+            include: {
+              model: true // Include the relation 'model' directly
+            }
+          });
+    
+        res.status(200).json({ success: true, data: allCars });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: 'Server error' });
+      }
+})
 
 
 
