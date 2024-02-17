@@ -1,5 +1,6 @@
 import express from 'express';
-import {  deleteUser, forgotPassword, getUser, login, register, resetPassword, updateUser } from '../../controller/user/authController.js';
+import {  forgotPassword, login,  resetPassword } from '../../controller/user/authController.js';
+import {  deleteUser, getUser, register, updateUser } from '../../controller/user/userController.js';
 
 import { authUser } from '../../middelware/validateToken.js';
 import { testOTPHandler } from '../../controller/user/otpController.js';
@@ -13,6 +14,7 @@ router.route('/forgot-password').post(verifyOTPHandler,forgotPassword)
 router.route('/otp').post(testOTPHandler)
 router.route('/reset-password').put(authUser,resetPassword)
 router.route('/').get(authUser, getUser).put(authUser, updateUser)
+
 
 router.route('/:id').delete(authUser,deleteUser)
 

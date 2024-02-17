@@ -22,6 +22,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   type         UserType
+  cars         car[]
 }
 
 enum UserType {
@@ -34,4 +35,38 @@ model otpTable {
   email     String
   otp       String
   createdAt DateTime @default(now())
+}
+
+model car {
+  id           String           @id @default(uuid())
+  userId       String           @map("userId")
+  ownerName    String
+  seat         Int
+  doors        Int
+  fuelType     FuelType
+  transmission TransmissionType
+  ac           Boolean?         @default(true)
+  sunroof      Boolean?         @default(false)
+  carName      String
+  carModel     String
+  rate         Int
+  unit         Int
+  description  String?
+  user         User             @relation(fields: [userId], references: [id])
+}
+
+enum TransmissionType {
+  MANUAL
+  AUTOMATIC
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  LPG
+  BIO
+  ETHANOL
+  METHANOL
+  ELECTRIC
 }
