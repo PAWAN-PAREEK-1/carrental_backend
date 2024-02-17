@@ -38,21 +38,26 @@ model otpTable {
 }
 
 model car {
-  id           String           @id @default(uuid())
-  userId       String           @map("userId")
-  ownerName    String
-  seat         Int
-  doors        Int
-  fuelType     FuelType
-  transmission TransmissionType
-  ac           Boolean?         @default(true)
-  sunroof      Boolean?         @default(false)
-  carName      String
-  carModel     String
-  rate         Int
-  unit         Int
-  description  String?
-  user         User             @relation(fields: [userId], references: [id])
+  id              String           @id @default(uuid())
+  userId          String           @map("userId")
+  ownerName       String
+  seat            Int
+  doors           Int
+  fuelType        FuelType
+  transmission    TransmissionType
+  ac              Boolean?         @default(true)
+  sunroof         Boolean?         @default(false)
+  engineNumber    String?
+  carNumber       String           @unique
+  carInsuranceNum String?
+  carRcNumber     String
+  carName         String
+  carModel        String
+  rate            Int
+  unit            String
+  carCompany      String
+  description     String?
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum TransmissionType {
