@@ -121,12 +121,12 @@ export const getAllCarModel = asyncHandler(async(req,res)=>{
 
 export const getAllCar = async (req, res) => {
   try {
-      // Extract query parameters
+
       const { page = 1, limit = 10, company, sortBy, sortOrder, minPrice, maxPrice, fuelType, transmission } = req.query;
 
-      // Prepare filtering conditions
+
       const where = {};
-      if (company) where.carCompany = company; // Filter by company name directly from the car table
+      if (company) where.carCompany = company;
       if (minPrice || maxPrice) {
           where.rate = {};
           if (minPrice) where.rate.gte = parseInt(minPrice);
@@ -135,13 +135,12 @@ export const getAllCar = async (req, res) => {
       if (fuelType) where.fuelType = fuelType;
       if (transmission) where.transmission = transmission;
 
-      // Prepare sorting options
       const orderBy = {};
       if (sortBy && sortOrder) {
           orderBy[sortBy] = sortOrder.toLowerCase();
       }
 
-      // Retrieve cars with pagination, filtering, and sorting
+
       const cars = await prisma.car.findMany({
           where, // Apply where condition directly
           orderBy,
@@ -149,7 +148,7 @@ export const getAllCar = async (req, res) => {
           skip: (parseInt(page) - 1) * parseInt(limit),
       });
 
-      // Count total number of cars for pagination
+      
       const totalCars = await prisma.car.count({ where });
 
       res.status(200).json({ success: true, data: cars, total: totalCars });
