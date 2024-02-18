@@ -29,7 +29,7 @@ export const addCar = asyncHandler(async(req,res)=>{
         description,
         carCompany
     } = req.body;
-    try { 
+    try {
 
         // Convert string values to appropriate data types
         const seatInt = parseInt(seat);
@@ -109,7 +109,7 @@ export const getAllCarModel = asyncHandler(async(req,res)=>{
               model: true // Include the relation 'model' directly
             }
           });
-    
+
         res.status(200).json({ success: true, data: allCars });
       } catch (error) {
         console.error(error);
@@ -117,64 +117,47 @@ export const getAllCarModel = asyncHandler(async(req,res)=>{
       }
 })
 
-// Define the getAllCar controller function
+
+
 export const getAllCar = async (req, res) => {
-    try {
+  try {
       // Extract query parameters
       const { page = 1, limit = 10, company, sortBy, sortOrder, minPrice, maxPrice, fuelType, transmission } = req.query;
-  
+
       // Prepare filtering conditions
       const where = {};
-      if (company) {
-        where.carCompany = { company: company }; // Filter by company name
-      }
+      if (company) where.carCompany = company; // Filter by company name directly from the car table
       if (minPrice || maxPrice) {
-        where.rate = {};
-        if (minPrice) {
-          where.rate.gte = parseInt(minPrice);
-        }
-        if (maxPrice) {
-          where.rate.lte = parseInt(maxPrice);
-        }
+          where.rate = {};
+          if (minPrice) where.rate.gte = parseInt(minPrice);
+          if (maxPrice) where.rate.lte = parseInt(maxPrice);
       }
-      if (fuelType) {
-        where.fuelType = fuelType;
-      }
-      if (transmission) {
-        where.transmission = transmission;
-      }
-  
+      if (fuelType) where.fuelType = fuelType;
+      if (transmission) where.transmission = transmission;
+
       // Prepare sorting options
       const orderBy = {};
       if (sortBy && sortOrder) {
-        orderBy[sortBy] = sortOrder.toLowerCase();
+          orderBy[sortBy] = sortOrder.toLowerCase();
       }
-  
+
       // Retrieve cars with pagination, filtering, and sorting
       const cars = await prisma.car.findMany({
-        where: where, // Apply where condition directly
-        include: {
-          carModel: {
-            include: {
-              carCompany: true // Include carCompany to enable filtering by company name
-            }
-          }
-        },
-        orderBy,
-        take: parseInt(limit),
-        skip: (parseInt(page) - 1) * parseInt(limit),
+          where, // Apply where condition directly
+          orderBy,
+          take: parseInt(limit),
+          skip: (parseInt(page) - 1) * parseInt(limit),
       });
-  
+
       // Count total number of cars for pagination
       const totalCars = await prisma.car.count({ where });
-  
+
       res.status(200).json({ success: true, data: cars, total: totalCars });
-    } catch (error) {
+  } catch (error) {
       console.error(error);
       res.status(500).json({ success: false, error: 'Server error' });
-    }
-  };
-  
+  }
+};
 
 
 

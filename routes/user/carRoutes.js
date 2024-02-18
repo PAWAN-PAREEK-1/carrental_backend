@@ -14,5 +14,5 @@ router.route('/getAllCarModel').get(authUser,getAllCarModel)
 router.route('/getAllCar').get(authUser,getAllCar)
 
 
-export { router as car}
+export { router as car} 
 
