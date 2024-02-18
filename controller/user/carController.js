@@ -148,7 +148,7 @@ export const getAllCar = async (req, res) => {
           skip: (parseInt(page) - 1) * parseInt(limit),
       });
 
-      
+
       const totalCars = await prisma.car.count({ where });
 
       res.status(200).json({ success: true, data: cars, total: totalCars });
@@ -159,4 +159,25 @@ export const getAllCar = async (req, res) => {
 };
 
 
+export const searchCar = async (req, res) => {
+  try {
+    const { search: searchQuery } = req.query;
+
+    const cars = await prisma.car.findMany({
+      where: {
+        OR: [
+          { carName: { contains: searchQuery || '' } },
+          { carModel: { contains: searchQuery || '' } },
+          { carCompany: { contains: searchQuery || '' } },
+          { description: { contains: searchQuery || '' } },
+        ],
+      },
+    });
+
+    res.status(200).json({ success: true, data: cars });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+};
 
