@@ -119,7 +119,7 @@ export const getAllCarModel = asyncHandler(async(req,res)=>{
 
 
 
-export const getAllCar = async (req, res) => {
+export const getAllCar = asyncHandler( async (req, res) => {
   try {
 
       const { page = 1, limit = 10, company, sortBy, sortOrder, minPrice, maxPrice, fuelType, transmission } = req.query;
@@ -156,10 +156,10 @@ export const getAllCar = async (req, res) => {
       console.error(error);
       res.status(500).json({ success: false, error: 'Server error' });
   }
-};
+});
 
 
-export const searchCar = async (req, res) => {
+export const searchCar = asyncHandler( async (req, res) => {
   try {
     const { search: searchQuery } = req.query;
 
@@ -179,5 +179,52 @@ export const searchCar = async (req, res) => {
     console.error(error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
-};
+});
 
+
+export const putCarReview = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const { carId, rating, review } = req.body;
+    if (!carId || !rating || !review) {
+      return res.status(400).json({ message: "Please provide car ID, review, and rating" });
+    }
+    if (rating > 5) {
+      return res.status(400).json({ message: "Rating should be less than or equal to 5" });
+    }
+
+    // Fetch the car and user details
+    // const selectedCar = await prisma.car.findFirst({ where: { id: carId } });
+    // const reviewingUser = await prisma.user.findFirst({ where: { id: userId } });
+
+    // if (!selectedCar || !reviewingUser) {
+    //   return res.status(404).json({ message: "Car or user not found" });
+    // }
+
+    // Save the review along with the car ID, user ID, and car/user details
+    const ratingInt = parseInt(rating);
+    const newReview = await prisma.carReview.create({
+      data: {
+        
+        rating:ratingInt,
+        review,
+       
+        car: {
+          connect: { id: carId }
+        },
+        user: {
+          connect: { id: userId }
+        }
+      },
+      include: {
+        car: true,
+        user: true
+      }
+    });
+
+    res.status(201).json({ success: true, review: newReview });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+    console.log(error)
+  }
+});

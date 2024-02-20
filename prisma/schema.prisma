@@ -11,18 +11,19 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String      @id @default(uuid())
   firstName    String
   lastName     String
-  email        String   @unique
-  mobileNumber Int      @unique
+  email        String      @unique
+  mobileNumber Int         @unique
   password     String
-  isBlock      Boolean? @default(false)
+  isBlock      Boolean?    @default(false)
   profileImage String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
   type         UserType
   cars         car[]
+  carReview    carReview[]
 }
 
 enum UserType {
@@ -58,6 +59,7 @@ model car {
   carCompany      String
   description     String?
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  carReview       carReview[]
 }
 
 enum TransmissionType {
@@ -89,4 +91,13 @@ model carModel {
   carCompany   carCompany @relation(fields: [carCompanyId], references: [id], onDelete: Cascade)
 }
 
-
+model carReview {
+  id     String @id @default(uuid())
+  carId  String
+  car    car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+  review String
+  rating Int
+  title  String? @default("null")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
