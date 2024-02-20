@@ -159,6 +159,40 @@ export const getAllCar = asyncHandler( async (req, res) => {
 });
 
 
+export const getSingleCar = asyncHandler(async(req,res)=>{
+  const carId = req.params.id;
+  try {
+
+    if(!carId){
+      return res.status(400).json({ message: "Please provide car id" }); // Return after sending response
+    }
+
+    const car = await prisma.car.findFirst({
+      where: {
+        id: carId
+      },
+      include:{
+        carReview:{
+          where: {
+            carId: carId
+          }
+        }
+      }
+    });
+
+    if (!car) {
+      return res.status(404).json({ message: "Car not found" }); // Return after sending response
+    }
+
+    res.status(200).json({ success: true, message: "Car detail fetched successfully", car });
+    
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+    console.log(error);
+  }
+});
+
+
 export const searchCar = asyncHandler( async (req, res) => {
   try {
     const { search: searchQuery } = req.query;
@@ -193,22 +227,21 @@ export const putCarReview = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Rating should be less than or equal to 5" });
     }
 
-    // Fetch the car and user details
-    // const selectedCar = await prisma.car.findFirst({ where: { id: carId } });
-    // const reviewingUser = await prisma.user.findFirst({ where: { id: userId } });
+    const existingCar = await prisma.car.findUnique({
+      where: {
+        id: carId
+      }
+    });
 
-    // if (!selectedCar || !reviewingUser) {
-    //   return res.status(404).json({ message: "Car or user not found" });
-    // }
+    if (!existingCar) {
+      return res.status(404).json({ message: "Car not found" });
+    }
 
-    // Save the review along with the car ID, user ID, and car/user details
     const ratingInt = parseInt(rating);
     const newReview = await prisma.carReview.create({
       data: {
-        
-        rating:ratingInt,
+        rating: ratingInt,
         review,
-       
         car: {
           connect: { id: carId }
         },
@@ -225,6 +258,6 @@ export const putCarReview = asyncHandler(async (req, res) => {
     res.status(201).json({ success: true, review: newReview });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
-    console.log(error)
+    console.log(error);
   }
 });
