@@ -28,4 +28,4 @@ jobs:
       run: pm2 --version
 
     - name: Run tests
-      run: sudo pm2 start run.sh --name backend_pawan_carrental
+      run: ./node_modules/.bin/pm2 start run.sh --name backend_pawan_carrental
