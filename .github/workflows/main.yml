@@ -25,4 +25,4 @@ jobs:
       run: npm install
 
     - name: Run tests
-      run: pm2 start run.sh --name backend_pawan_carrental
+      run: sudo pm2 start run.sh --name backend_pawan_carrental
