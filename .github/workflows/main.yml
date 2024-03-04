@@ -19,10 +19,13 @@ jobs:
     - name: Use Node.js 14.x
       uses: actions/setup-node@v2
       with:
-        node-version: 14.x
+        node-version: 18.x
 
-    - name: Install dependencies
-      run: npm install
+    - name: install pm2
+      run: npm install -g pm2
+
+    - name: check pm2 
+      run: pm2 --version
 
     - name: Run tests
-      run: pm2 start run.sh --name backend_pawan_carrental
+      run: ./node_modules/.bin/pm2 start run.sh --name backend_pawan_carrental
