@@ -37,7 +37,7 @@ export const login = asyncHandler(async (req, res, next) => {
             lastName: userExist.lastName,
             email: userExist.email,
             type: userExist.type
-        }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        }, process.env.JWT_SECRET, { expiresIn: '720h' });
 
         res.status(200).json({ message: "Login successful", accessToken: accessToken });
     } catch (error) {
