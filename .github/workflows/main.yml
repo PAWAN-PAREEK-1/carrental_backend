@@ -21,11 +21,8 @@ jobs:
       with:
         node-version: 18.x
 
-    - name: install pm2
-      run: npm install -g pm2
+    - name: install npm
+      run: npm i
 
-    - name: check pm2 
-      run: pm2 --version
-
-    - name: Run tests
-      run: ./node_modules/.bin/pm2 start run.sh --name backend_pawan_carrental
+    - name: run
+      run: pm2 start run.sh --name backend
