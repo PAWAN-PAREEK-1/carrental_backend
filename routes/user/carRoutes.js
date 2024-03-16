@@ -17,5 +17,6 @@ router.route('/get-single-car/:id').get(authUser,getSingleCar)
 router.route('/searchCar').get(authUser,searchCar)
 
 
+
 export { router as car}
 

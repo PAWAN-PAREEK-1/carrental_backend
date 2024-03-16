@@ -39,7 +39,7 @@ export const login = asyncHandler(async (req, res, next) => {
             type: userExist.type
         }, process.env.JWT_SECRET, { expiresIn: '720h' });
 
-        res.status(200).json({ message: "Login successful", accessToken: accessToken });
+        res.status(200).json({success:true, message:  "Login successful", accessToken: accessToken });
     } catch (error) {
         console.log(error)
     }

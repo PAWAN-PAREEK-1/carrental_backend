@@ -193,9 +193,17 @@ export const getSingleCar = asyncHandler(async(req,res)=>{
 });
 
 
-export const searchCar = asyncHandler( async (req, res) => {
+export const searchCar = asyncHandler(async (req, res) => {
   try {
-    const { search: searchQuery } = req.query;
+    const { search: searchQuery, page = 1, pageSize = 10, limit } = req.query;
+
+    const skip = (page - 1) * pageSize;
+
+    let take = pageSize;
+    if (limit) {
+      // If a limit is provided, adjust take to be the minimum of pageSize and limit
+      take = Math.min(parseInt(limit), pageSize);
+    }
 
     const cars = await prisma.car.findMany({
       where: {
@@ -204,8 +212,11 @@ export const searchCar = asyncHandler( async (req, res) => {
           { carModel: { contains: searchQuery || '' } },
           { carCompany: { contains: searchQuery || '' } },
           { description: { contains: searchQuery || '' } },
+          { transmission: { contains: searchQuery || '' } },
         ],
       },
+      skip,
+      take,
     });
 
     res.status(200).json({ success: true, data: cars });
@@ -214,6 +225,7 @@ export const searchCar = asyncHandler( async (req, res) => {
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
+
 
 
 export const putCarReview = asyncHandler(async (req, res) => {

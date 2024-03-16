@@ -72,9 +72,11 @@ export const    register = asyncHandler(async (req, res, next) => {
 
 export const updateUser = asyncHandler(async (req, res) => {
     try {
-        const { firstName, lastName, profileImage } = req.body
+        const { firstName, lastName, profileImage ,image_key} = req.body
         const userId = req.user.id
+        const file = req.file
         // console.log(userId)
+
         if (!userId) {
             res.status(404).json({ message: "please provide userid" })
         }
@@ -86,10 +88,12 @@ export const updateUser = asyncHandler(async (req, res) => {
         if (firstName) dataUpdate.firstName = firstName;
         if (lastName) dataUpdate.lastName = lastName;
         if (profileImage) dataUpdate.profileImage = profileImage;
+        if (image_key) dataUpdate.image_key = image_key;
 
         if (Object.keys(dataUpdate).length === 0) {
             return res.status(400).json({ message: "No fields provided for updating" });
         }
+        console.log("this is profile image "+ profileImage  + "and this is file " + file)
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: dataUpdate,
@@ -100,6 +104,7 @@ export const updateUser = asyncHandler(async (req, res) => {
                 mobileNumber: true,
                 email: true,
                 profileImage: true,
+                image_key:true,
                 type: true,
                 createdAt: true,
                 updatedAt: true,
