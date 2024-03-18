@@ -2,6 +2,7 @@ import express from 'express';
 
 import { authUser } from '../../middelware/validateToken.js';
 import { addCar, getAllCar, getAllCarModel, getSingleCar, putCarReview, searchCar } from '../../controller/user/carController.js';
+import {upload} from '../../multerCar.js';
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
 
 
 
-router.route('/addCar').post(authUser,addCar)
+router.route('/addCar').post( authUser,upload.array('files', 5),addCar)
 router.route('/car-review').post(authUser,putCarReview)
 router.route('/getAllCarModel').get(authUser,getAllCarModel)
 router.route('/getAllCar').get(authUser,getAllCar)

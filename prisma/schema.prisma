@@ -54,13 +54,22 @@ model car {
   carInsuranceNum String?
   carRcNumber     String
   carName         String
-  carModel        String
+  carModelYear    String?          @default("null")
+  carModel        String?          @default("null")
   rate            Int
   unit            String
   carCompany      String
   description     String?
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   carReview       carReview[]
+  carImages       carImage[]
+}
+
+model carImage {
+  id    String @id @default(uuid())
+  url   String
+  car   car    @relation(fields: [carId], references: [id])
+  carId String
 }
 
 enum TransmissionType {
@@ -93,12 +102,12 @@ model carModel {
 }
 
 model carReview {
-  id     String @id @default(uuid())
+  id     String  @id @default(uuid())
   carId  String
-  car    car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+  car    car     @relation(fields: [carId], references: [id], onDelete: Cascade)
   review String
   rating Int
   title  String? @default("null")
   userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

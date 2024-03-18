@@ -66,7 +66,7 @@
     <input type="text" id="carCompany" name="carCompany" required><br><br>
 
     <label for="images">Upload Images:</label>
-    <input type="file" name="files" multiple /><br><br>
+    <input type="file" id="images" name="images" multiple><br><br>
 
     <button type="submit">Add Car</button>
   </form>
@@ -80,8 +80,13 @@
       const formData = new FormData(this);
 
       try {
+        const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwMDI1ODJmMC1kYjZmLTRmYzktODc5Yy01ZWQwOGFjY2NkNTQiLCJmaXJzdE5hbWUiOiJhcGl0ZXN0IiwibGFzdE5hbWUiOiJEb2UiLCJlbWFpbCI6ImJoYXJnYXZwYXRlbDY4MzJAZ21haWwuY29tIiwidHlwZSI6IlNFTExFUiIsImlhdCI6MTcxMDc2MDI0NiwiZXhwIjoxNzEzMzUyMjQ2fQ.dNEnBpV25CyW7mcgxG6zlrxI8YDMnedR7STZycbx3Xg";
+
         const response = await fetch('http://localhost:5000/api/car/addCar', {
           method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}` // Set the access token in the Authorization header
+          },
           body: formData
         });
 

@@ -9,97 +9,110 @@ import dotenv from 'dotenv';
 
 
 export const addCar = asyncHandler(async(req,res)=>{
-    const userId = req.user.id
-    const {
-        ownerName,
-        seat,
-        doors,
-        fuelType,
-        transmission,
-        ac,
-        sunroof,
-        engineNumber,
-        carNumber,
-        carInsuranceNum,
-        carRcNumber,
-        carName,
-        carModel,
-        rate,
-        unit,
-        description,
-        carCompany
-    } = req.body;
-    try {
+  const userId = req.user.id;
+  console.log(userId);
+  // const {
+  //     ownerName,
+  //     seat,
+  //     doors,
+  //     fuelType,
+  //     transmission,
+  //     ac,
+  //     sunroof,
+  //     engineNumber,
+  //     carNumber,
+  //     carInsuranceNum,
+  //     carRcNumber,
+  //     carName,
+  //     carModel,
+  //     rate,
+  //     unit,
+  //     description,
+  //     carCompany,
+  //     carImages
+  // } = req.body;
 
-        // Convert string values to appropriate data types
-        const seatInt = parseInt(seat);
-        const rateInt = parseInt(rate);
-        const doorsInt = parseInt(doors);
-        const unitInt = parseInt(unit);
-        const acBool = ac.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
-        const sunroofBool = sunroof.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
+  const urls = req.files.map(file => file.path);
+  return res.json({ urls: urls });
 
-        if(
-            !carCompany ||
-            !ownerName ||
-            !seatInt ||
-            !fuelType ||
-            !transmission ||
-            !sunroofBool ||
-            !acBool ||
-            !doorsInt ||
-            !engineNumber ||
-            !carNumber ||
-            !carName ||
-            !carModel ||
-            !carRcNumber ||
-            !carInsuranceNum ||
-            !rate ||
-            !unit
-        ) {
-            return res.status(400).json({ success: false, message: "Please provide full car detail" });
-        }
+  try {
+      // Convert string values to appropriate data types
+      const seatInt = parseInt(seat);
+      const rateInt = parseInt(rate);
+      const doorsInt = parseInt(doors);
+      const unitInt = parseInt(unit);
+      const acBool = ac.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
+      const sunroofBool = sunroof.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
 
-        const newCar = await prisma.car.create({
-            data: {
-                ownerName,
-                seat: seatInt,
-                doors: doorsInt,
-                fuelType,
-                transmission,
-                ac: acBool,
-                sunroof: sunroofBool,
-                engineNumber,
-                carNumber,
-                carInsuranceNum,
-                carRcNumber,
-                carName,
-                carModel,
-                rate: rateInt,
-                unit,
-                description,
-                carCompany,
-                // Include the user information
-                user: {
-                    connect: { id: userId } // Connect to the existing user based on the userId
-                }
-            }
-        });
+      if(
+          !carCompany ||
+          !ownerName ||
+          !seatInt ||
+          !fuelType ||
+          !transmission ||
+          !sunroofBool ||
+          !acBool ||
+          !doorsInt ||
+          !engineNumber ||
+          !carNumber ||
+          !carName ||
+          !carModel ||
+          !carRcNumber ||
+          !carInsuranceNum ||
+          !rate ||
+          !unit
+      ) {
+          return res.status(400).json({ success: false, message: "Please provide full car detail" });
+      }
 
-        // Fetch user details based on userId
-        const user = await prisma.user.findFirst({
-            where: {
-                id: userId
-            }
-        });
+      const newCar = await prisma.car.create({
+          data: {
+              ownerName,
+              seat: seatInt,
+              doors: doorsInt,
+              fuelType,
+              transmission,
+              ac: acBool,
+              sunroof: sunroofBool,
+              engineNumber,
+              carNumber,
+              carInsuranceNum,
+              carRcNumber,
+              carName,
+              carModel,
+              rate: rateInt,
+              unit,
+              description,
+              carCompany,
+              // Include the user information
+              user: {
+                  connect: { id: userId } // Connect to the existing user based on the userId
+              },
+              carImages: {
+                  create: images // Associate the uploaded images with the car entry
+              }
+          },
+          include: {
+              carImages: true // Include images in the response
+          }
+      });
 
-        res.status(201).json({ success: true, data: { car: newCar, user } });
+      // Fetch user details based on userId
+      const user = await prisma.user.findFirst({
+          where: {
+              id: userId
+          }
+      });
 
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
-    }
-})
+      res.status(201).json({ success: true, data: { car: newCar, user } });
+
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+
 
 export const getAllCarModel = asyncHandler(async(req,res)=>{
     try {

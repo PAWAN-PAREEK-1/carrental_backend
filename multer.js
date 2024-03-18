@@ -17,7 +17,7 @@ cloudinary.config({
     cloudinary:cloudinary,
     params:{
         folder:"user",
-        allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'pdf']
+        allowed_formats: ['jpg', 'png', 'jpeg', 'gif']
     }
   });
 
