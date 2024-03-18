@@ -11,29 +11,33 @@ import dotenv from 'dotenv';
 export const addCar = asyncHandler(async(req,res)=>{
   const userId = req.user.id;
   console.log(userId);
-  // const {
-  //     ownerName,
-  //     seat,
-  //     doors,
-  //     fuelType,
-  //     transmission,
-  //     ac,
-  //     sunroof,
-  //     engineNumber,
-  //     carNumber,
-  //     carInsuranceNum,
-  //     carRcNumber,
-  //     carName,
-  //     carModel,
-  //     rate,
-  //     unit,
-  //     description,
-  //     carCompany,
-  //     carImages
-  // } = req.body;
+  const {
+      ownerName,
+      seat,
+      doors,
+      fuelType,
+      transmission,
+      ac,
+      sunroof,
+      engineNumber,
+      carNumber,
+      carInsuranceNum,
+      carRcNumber,
+      carName,
+      carModel,
+      rate,
+      unit,
+      description,
+      carCompany,
+      carImages
+  } = req.body;
 
-  const urls = req.files.map(file => file.path);
-  return res.json({ urls: urls });
+  // Check if req.files is an object or an array
+  const images = req.files.map(file => file.path);
+  res.json({ urls: images });
+
+  console.log("Uploaded images:", images);
+  
 
   try {
       // Convert string values to appropriate data types
