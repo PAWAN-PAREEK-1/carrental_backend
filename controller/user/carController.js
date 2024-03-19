@@ -25,10 +25,15 @@ export const addCar = asyncHandler(async (req, res) => {
   }
 
   // Check if req.files is an object or an array
-  const images = req.files.map(file => file.path);
-  res.json({ urls: images });
+  const interiorImages = req.files['interiorImages'].map(file => file.path);
+  const exteriorImages = req.files['exteriorImages'].map(file => file.path);
+  console.log("Uploaded interior images:", interiorImages);
+  console.log("Uploaded exterior images:", exteriorImages);
 
-  console.log("Uploaded images:", images);
+  // Create an array of objects for interior images
+  const newInteriorImages = interiorImages.map(url => ({ url }));
+  // Create an array of objects for exterior images
+  const newExteriorImages = exteriorImages.map(url => ({ url }));
 
 
   try {
@@ -44,7 +49,7 @@ export const addCar = asyncHandler(async (req, res) => {
       return res.status(400).json({ success: false, message: "Please provide full car detail" });
     }
 
-    const newCarImages = images.map(url => ({ url }));
+    // const newCarImages = images.map(url => ({ url }));
 
     const newCar = await prisma.car.create({
       data: {
@@ -70,8 +75,11 @@ export const addCar = asyncHandler(async (req, res) => {
           connect: { id: userId } // Connect to the existing user based on the userId
         },
         carImages: {
-          create: newCarImages // Associate the uploaded images with the car entry
-        }
+          create: [
+              ...newInteriorImages.map(image => ({ ...image, type: 'interior' })), // Added 'type: interior'
+              ...newExteriorImages.map(image => ({ ...image, type: 'exterior' })) // Added 'type: exterior'
+          ] // Associate the uploaded images with the car entry
+      }
       },
       include: {
         carImages: true // Include images in the response

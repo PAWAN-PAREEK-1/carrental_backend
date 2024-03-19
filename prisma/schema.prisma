@@ -68,6 +68,7 @@ model car {
 model carImage {
   id    String @id @default(uuid())
   url   String
+  type  String?
   car   car    @relation(fields: [carId], references: [id])
   carId String
 }
