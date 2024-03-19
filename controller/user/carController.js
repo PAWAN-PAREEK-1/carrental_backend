@@ -144,16 +144,34 @@ export const getAllCar = asyncHandler(async (req, res) => {
 
 
     const cars = await prisma.car.findMany({
-      where, // Apply where condition directly
+      include:{
+        carImages:true
+      },
+      where    , // Apply where condition directly
       orderBy,
       take: parseInt(limit),
       skip: (parseInt(page) - 1) * parseInt(limit),
+      
+    });
+
+    const carsWithImages = cars.map(car => {
+      const carImages = { interior: [], exterior: [] };
+
+      car.carImages.forEach(image => {
+        if (image.type === 'interior') {
+          carImages.interior.push(image);
+        } else if (image.type === 'exterior') {
+          carImages.exterior.push(image);
+        }
+      });
+
+      return { ...car, carImages };
     });
 
 
     const totalCars = await prisma.car.count({ where });
 
-    res.status(200).json({ success: true, data: cars, total: totalCars });
+    res.status(200).json({ success: true, data: carsWithImages, total: totalCars });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: 'Server error' });
@@ -178,15 +196,34 @@ export const getSingleCar = asyncHandler(async (req, res) => {
           where: {
             carId: carId
           }
-        }
+        },
+        carImages:true
       }
     });
+
+    const carImages = {
+      interior: [],
+      exterior: []
+    };
+    car.carImages.forEach(image => {
+      if (image.type === 'interior') {
+        carImages.interior.push(image);
+      } else if (image.type === 'exterior') {
+        carImages.exterior.push(image);
+      }
+    });    
 
     if (!car) {
       return res.status(404).json({ message: "Car not found" }); // Return after sending response
     }
 
-    res.status(200).json({ success: true, message: "Car detail fetched successfully", car });
+    res.status(200).json({ success: true, message: "Car detail fetched successfully",  car: {
+      ...car,
+      carImages: {
+        interior: carImages.interior,
+        exterior: carImages.exterior
+      }
+    }  });
 
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
