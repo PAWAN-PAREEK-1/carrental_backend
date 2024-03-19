@@ -8,179 +8,156 @@ import asyncHandler from "express-async-handler";
 import dotenv from 'dotenv';
 
 
-export const addCar = asyncHandler(async(req,res)=>{
+export const addCar = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   console.log(userId);
-  const {
-      ownerName,
-      seat,
-      doors,
-      fuelType,
-      transmission,
-      ac,
-      sunroof,
-      engineNumber,
-      carNumber,
-      carInsuranceNum,
-      carRcNumber,
-      carName,
-      carModel,
-      rate,
-      unit,
-      description,
-      carCompany,
-      carImages
-  } = req.body;
+
+  const { ownerName, seat, doors, fuelType, transmission, ac, sunroof, engineNumber, carNumber, carInsuranceNum, carRcNumber, carName, carModel, rate, unit, description, carCompany, carImages } = req.body;
+
+  const carNumberValidate = await prisma.car.findFirst({
+          where:{
+            carNumber:carNumber
+          }
+  })
+
+  if(carNumberValidate){
+    return res.status(409).json({message:"car Number is already exists"})
+  }
 
   // Check if req.files is an object or an array
   const images = req.files.map(file => file.path);
   res.json({ urls: images });
 
   console.log("Uploaded images:", images);
-  
+
 
   try {
-      // Convert string values to appropriate data types
-      const seatInt = parseInt(seat);
-      const rateInt = parseInt(rate);
-      const doorsInt = parseInt(doors);
-      const unitInt = parseInt(unit);
-      const acBool = ac.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
-      const sunroofBool = sunroof.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
+    // Convert string values to appropriate data types
+    const seatInt = parseInt(seat);
+    const rateInt = parseInt(rate);
+    const doorsInt = parseInt(doors);
+    const unitInt = parseInt(unit);
+    const acBool = ac.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
+    const sunroofBool = sunroof.toLowerCase() === "true"; // Convert to lowercase and check if it's "true"
 
-      if(
-          !carCompany ||
-          !ownerName ||
-          !seatInt ||
-          !fuelType ||
-          !transmission ||
-          !sunroofBool ||
-          !acBool ||
-          !doorsInt ||
-          !engineNumber ||
-          !carNumber ||
-          !carName ||
-          !carModel ||
-          !carRcNumber ||
-          !carInsuranceNum ||
-          !rate ||
-          !unit
-      ) {
-          return res.status(400).json({ success: false, message: "Please provide full car detail" });
+    if (!carCompany || !ownerName || !seat || !fuelType || !transmission || !sunroof || !ac || !doors || !engineNumber || !carNumber || !carName || !carModel || !carRcNumber || !carInsuranceNum || !rate || !unit) {
+      return res.status(400).json({ success: false, message: "Please provide full car detail" });
+    }
+
+    const newCarImages = images.map(url => ({ url }));
+
+    const newCar = await prisma.car.create({
+      data: {
+        ownerName,
+        seat: seatInt,
+        doors: doorsInt,
+        fuelType,
+        transmission,
+        ac: acBool,
+        sunroof: sunroofBool,
+        engineNumber,
+        carNumber,
+        carInsuranceNum,
+        carRcNumber,
+        carName,
+        carModel,
+        rate: rateInt,
+        unit,
+        description,
+        carCompany,
+        // Include the user information
+        user: {
+          connect: { id: userId } // Connect to the existing user based on the userId
+        },
+        carImages: {
+          create: newCarImages // Associate the uploaded images with the car entry
+        }
+      },
+      include: {
+        carImages: true // Include images in the response
       }
+    });
 
-      const newCar = await prisma.car.create({
-          data: {
-              ownerName,
-              seat: seatInt,
-              doors: doorsInt,
-              fuelType,
-              transmission,
-              ac: acBool,
-              sunroof: sunroofBool,
-              engineNumber,
-              carNumber,
-              carInsuranceNum,
-              carRcNumber,
-              carName,
-              carModel,
-              rate: rateInt,
-              unit,
-              description,
-              carCompany,
-              // Include the user information
-              user: {
-                  connect: { id: userId } // Connect to the existing user based on the userId
-              },
-              carImages: {
-                  create: images // Associate the uploaded images with the car entry
-              }
-          },
-          include: {
-              carImages: true // Include images in the response
-          }
-      });
+    // Fetch user details based on userId
+    const user = await prisma.user.findFirst({
+      where: {
+        id: userId
+      }
+    });
 
-      // Fetch user details based on userId
-      const user = await prisma.user.findFirst({
-          where: {
-              id: userId
-          }
-      });
-
-      res.status(201).json({ success: true, data: { car: newCar, user } });
+    res.status(201).json({ success: true, data: { car: newCar, user } });
 
   } catch (error) {
-      console.log(error);
-      res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.log(error);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
 
 
 
-export const getAllCarModel = asyncHandler(async(req,res)=>{
-    try {
-        // Retrieve all cars from the database
-        const allCars = await prisma.carCompany.findMany({
-            include: {
-              model: true // Include the relation 'model' directly
-            }
-          });
-
-        res.status(200).json({ success: true, data: allCars });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: 'Server error' });
+export const getAllCarModel = asyncHandler(async (req, res) => {
+  try {
+    // Retrieve all cars from the database
+    const allCars = await prisma.carCompany.findMany({
+      include: {
+        model: true // Include the relation 'model' directly
       }
+    });
+
+    res.status(200).json({ success: true, data: allCars });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
 })
 
 
 
-export const getAllCar = asyncHandler( async (req, res) => {
+export const getAllCar = asyncHandler(async (req, res) => {
   try {
 
-      const { page = 1, limit = 10, company, sortBy, sortOrder, minPrice, maxPrice, fuelType, transmission } = req.query;
+    const { page = 1, limit = 10, company, sortBy, sortOrder, minPrice, maxPrice, fuelType, transmission } = req.query;
 
 
-      const where = {};
-      if (company) where.carCompany = company;
-      if (minPrice || maxPrice) {
-          where.rate = {};
-          if (minPrice) where.rate.gte = parseInt(minPrice);
-          if (maxPrice) where.rate.lte = parseInt(maxPrice);
-      }
-      if (fuelType) where.fuelType = fuelType;
-      if (transmission) where.transmission = transmission;
+    const where = {};
+    if (company) where.carCompany = company;
+    if (minPrice || maxPrice) {
+      where.rate = {};
+      if (minPrice) where.rate.gte = parseInt(minPrice);
+      if (maxPrice) where.rate.lte = parseInt(maxPrice);
+    }
+    if (fuelType) where.fuelType = fuelType;
+    if (transmission) where.transmission = transmission;
 
-      const orderBy = {};
-      if (sortBy && sortOrder) {
-          orderBy[sortBy] = sortOrder.toLowerCase();
-      }
-
-
-      const cars = await prisma.car.findMany({
-          where, // Apply where condition directly
-          orderBy,
-          take: parseInt(limit),
-          skip: (parseInt(page) - 1) * parseInt(limit),
-      });
+    const orderBy = {};
+    if (sortBy && sortOrder) {
+      orderBy[sortBy] = sortOrder.toLowerCase();
+    }
 
 
-      const totalCars = await prisma.car.count({ where });
+    const cars = await prisma.car.findMany({
+      where, // Apply where condition directly
+      orderBy,
+      take: parseInt(limit),
+      skip: (parseInt(page) - 1) * parseInt(limit),
+    });
 
-      res.status(200).json({ success: true, data: cars, total: totalCars });
+
+    const totalCars = await prisma.car.count({ where });
+
+    res.status(200).json({ success: true, data: cars, total: totalCars });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ success: false, error: 'Server error' });
+    console.error(error);
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 
-export const getSingleCar = asyncHandler(async(req,res)=>{
+export const getSingleCar = asyncHandler(async (req, res) => {
   const carId = req.params.id;
   try {
 
-    if(!carId){
+    if (!carId) {
       return res.status(400).json({ message: "Please provide car id" }); // Return after sending response
     }
 
@@ -188,8 +165,8 @@ export const getSingleCar = asyncHandler(async(req,res)=>{
       where: {
         id: carId
       },
-      include:{
-        carReview:{
+      include: {
+        carReview: {
           where: {
             carId: carId
           }
@@ -202,7 +179,7 @@ export const getSingleCar = asyncHandler(async(req,res)=>{
     }
 
     res.status(200).json({ success: true, message: "Car detail fetched successfully", car });
-    
+
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
     console.log(error);
